@@ -1,0 +1,36 @@
+d:q.personKind,action:q.action,actionAt:q.actionAt,deviceLabel:q.deviceLabel})));
+  }
+  async function syncOnce(){
+    if(!state.sync.enabled||state.sync.syncing||!state.people.length)return;
+    state.sync.syncing=true; setSyncStatus('syncing');
+    try{
+      if(!state.sync.eventToken) await prepareSyncTokens();
+      let current=state.sync.queue.filter(q=>normalizeSyncCode(q.syncCode)===effectiveSyncCode());
+      while(current.length){
+        const batchItems=current.slice(0,200), records=await materializeBatch(batchItems);
+        await syncApi({action:'push',eventToken:state.sync.eventToken,records});
+        const sent=new Set(batchItems.map(x=>x.clientEventId));
+        state.sync.queue=state.sync.queue.filter(x=>!sent.has(x.clientEventId)); save();
+        current=state.sync.queue.filter(q=>normalizeSyncCode(q.syncCode)===effectiveSyncCode());
+      }
+      const pulled=await syncApi({action:'pull',eventToken:state.sync.eventToken});
+      await applyRemoteEvents(pulled.events||[]); state.sync.lastSyncAt=nowIso(); setSyncStatus('online');
+    }catch(err){ console.warn('sync failed',err); setSyncStatus('offline',err?.message||'通信できません'); }
+    finally{ state.sync.syncing=false; updateSyncUi(); }
+  }
+  function stopSyncLoop(){ if(state.sync.timer){clearInterval(state.sync.timer);state.sync.timer=null;} }
+  function startSyncLoop(){ stopSyncLoop(); state.sync.timer=setInterval(syncOnce,SYNC_INTERVAL_MS); syncOnce(); }
+  function setSyncStatus(status,detail=''){ state.sync.status=status; state.sync.statusDetail=detail; updateSyncUi(); }
+  function updateSyncUi(){
+    if(!els.syncBadge)return;
+    const status=state.sync.enabled?state.sync.status:'off';
+    const labels={off:'同期OFF',online:'● 同期中',syncing:'↻ 同期中…',offline:'● オフライン'};
+    [els.syncBadge,els.settingsSyncState].forEach(el=>{el.className=`sync-badge ${status}`;el.textContent=labels[status]||labels.off;});
+    els.syncDeviceLabel.textContent=state.sync.enabled?(state.sync.deviceLabel||'受付端末'):'この端末のみ';
+    const pending=state.sync.queue.filter(q=>normalizeSyncCode(q.syncCode)===effectiveSyncCode()).length;
+    els.syncPending.textContent=state.sync.enabled?(pending?`未同期 ${pending}件`:(state.sync.lastSyncAt?`最終 ${timeJa(state.sync.lastSyncAt)}`:'接続確認中')):'';
+    els.syncNowBtn.textContent=state.sync.enabled?'今すぐ同期':'同期設定';
+    els.offlineWarning.classList.toggle('hidden',!(state.sync.enabled&&status==='offline'));
+    els.enableSyncBtn.textContent=state.sync.enabled?'設定を更新して同期':'同期を開始';
+    els.disableSyncBtn.classList.toggle('hidden',!state.sync.enabled); els.clearCloudSyncBtn.classList.toggle('hidden',!state.sync.enabled);
+    els.syncDetail.textContent=state.sync.enabled?`${state.sync.deviceLabel} ／ 同期コード ${displaySyncCode(state.sync.co
