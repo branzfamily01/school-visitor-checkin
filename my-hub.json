@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "title": "来校チェック",
+  "category": "Tools",
+  "summary": "Excel名簿から来校者の本人情報・当落・受付済みを素早く照合し、複数受付端末でも匿名同期できる受付アプリ。",
+  "tags": ["受付", "Excel", "学校", "来校者", "複数端末", "オフライン"],
+  "color": "blue",
+  "status": "active",
+  "visibility": "public",
+  "publicUrl": "https://branzfamily01.github.io/school-visitor-checkin/",
+  "manualUrl": "https://branzfamily01.github.io/school-visitor-checkin/manual.html"
+}

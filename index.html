@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14532d">
+  <meta name="description" content="Excel名簿を端末内で読み込み、当落・本人情報・来校済みを素早く照合する複数端末同期対応の受付Webアプリ">
+  <title>来校チェック</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">VISITOR CHECK-IN</p>
+        <h1>来校チェック</h1>
+      </div>
+      <div class="header-actions">
+        <a class="help-btn" href="manual.html">？ 使い方</a>
+        <button id="settingsBtn" class="icon-btn" type="button" aria-label="設定を開く">⚙</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="loadPanel" class="panel load-panel">
+        <div class="hero-icon" aria-hidden="true">📋</div>
+        <h2>受付名簿を読み込む</h2>
+        <p>Excel / CSV はこの端末のブラウザ内で読み込みます。氏名・フリガナ・学校名などの名簿内容は、同期サーバーへ送りません。</p>
+
+        <section id="resumeCard" class="resume-card hidden" aria-live="polite">
+          <div class="resume-head">
+            <div>
+              <p class="eyebrow">AUTO SAVE</p>
+              <h3>前回の受付があります</h3>
+            </div>
+            <span class="saved-badge">保存済み</span>
+          </div>
+          <p id="resumeDataset" class="resume-dataset"></p>
+          <div class="resume-metrics">
+            <span><b id="resumeChecked">0</b>名 受付済み</span>
+            <span>最終受付 <b id="resumeLast">—</b></span>
+          </div>
+          <button id="resumeBtn" class="primary-btn resume-btn" type="button">前回の受付を続ける</button>
+          <p class="hint compact">Excelを選び直さず、そのまま続きから再開できます。</p>
+        </section>
+
+        <div id="loadDivider" class="load-divider hidden"><span>または</span></div>
+
+        <label class="primary-btn file-btn">
+          <input id="fileInput" type="file" accept=".xlsx,.xlsm,.csv,text/csv" hidden>
+          Excel / CSV を選ぶ
+        </label>
+        <p class="hint">8/22の実データでは「7kai」シート・B列の「t / ｔ」280件を自動認識します。別形式の名簿は設定画面で列を割り当てられます。</p>
+        <p class="start-help"><a href="manual.html#first">初めて使う方：まずこれだけ →</a></p>
+        <div id="loadError" class="error-box hidden" role="alert"></div>
+      </section>
+
+      <section id="receptionPanel" class="hidden">
+        <div class="autosave-row">
+          <span id="saveStatus" class="save-status" aria-live="polite">✓ この端末に保存済み</span>
+          <span id="lastSavedAt" class="last-saved"></span>
+        </div>
+
+        <section class="sync-strip" aria-label="複数端末同期状態">
+          <div>
+            <span id="syncBadge" class="sync-badge off">同期OFF</span>
+            <strong id="syncDeviceLabel" class="sync-device">この端末のみ</strong>
+            <span id="syncPending" class="sync-pending"></span>
+          </div>
+          <button id="syncNowBtn" class="mini-btn" type="button">同期設定</button>
+        </section>
+        <div id="offlineWarning" class="offline-warning hidden" role="alert">
+          <strong>⚠ 他の受付端末とは現在同期されていません</strong>
+          <span>受付はこの端末でそのまま続けられます。通信が戻ると未同期分を自動送信します。通信断中は二重受付に注意してください。</span>
+        </div>
+
+        <div class="status-row" aria-label="受付状況">
+          <div class="stat"><span class="stat-label">来校済</span><strong id="checkedCount">0</strong></div>
+          <div class="stat"><span class="stat-label">当選</span><strong id="winnerChecked">0</strong></div>
+          <div class="stat"><span class="stat-label">落選</span><strong id="loserChecked">0</strong></div>
+          <div class="stat"><span class="stat-label">名簿外</span><strong id="externalChecked">0</strong></div>
+        </div>
+
+        <section class="search-zone">
+          <label for="searchInput" class="search-label">来校者のお名前を入力</label>
+          <div class="search-box-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="searchInput" class="search-input" type="search" inputmode="kana" autocomplete="off" placeholder="カタカナ・漢字・受付ID" aria-describedby="searchHelp">
+            <button id="clearSearchBtn" class="clear-btn hidden" type="button" aria-label="検索を消去">×</button>
+          </div>
+          <p id="searchHelp" class="hint compact">空白・全角半角を気にせず検索できます。ひらがな入力もカタカナとして照合します。</p>
+        </section>
+
+        <div id="recentSuccess" class="success-banner hidden" aria-live="polite"></div>
+        <section id="results" class="results" aria-live="polite"></section>
+
+        <section id="emptyState" class="empty-state">
+          <p>名前を数文字入力すると候補が表示されます。</p>
+          <button id="manualAddBtn" class="secondary-btn" type="button">＋ 名簿外の方を受付</button>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <span id="datasetLabel">名簿未読込</span>
+      <span>当落にかかわらず本人確認後に受付</span>
+    </footer>
+  </div>
+
+  <dialog id="manualDialog" class="dialog">
+    <form method="dialog" class="dialog-card" id="manualForm">
+      <div class="dialog-head">
+        <div><p class="eyebrow">名簿外</p><h2>来校者を追加</h2></div>
+        <button value="cancel" class="icon-btn" aria-label="閉じる">×</button>
+      </div>
+      <label>フリガナ <span class="required">必須</span>
+        <input id="manualKana" required autocomplete="off" placeholder="例：タナカ ハルカ">
+      </label>
+      <label>氏名
+        <input id="manualName" autocomplete="off" placeholder="任意">
+      </label>
+      <label>学校名
+        <input id="manualSchool" autocomplete="off" placeholder="任意">
+      </label>
+      <label>メモ
+        <textarea id="manualMemo" rows="3" placeholder="任意"></textarea>
+      </label>
+      <p class="privacy-note">複数端末同期中も、この氏名・フリガナ・学校名そのものは同期サーバーへ送りません。同じ名義を別端末で入力した場合は、匿名IDで重複を確認します。</p>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost-btn">キャンセル</button>
+        <button id="manualSubmit" value="default" class="primary-btn" type="submit">この方を受付</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog" class="dialog">
+    <div class="dialog-card settings-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">SETTINGS</p><h2>受付設定</h2></div>
+        <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="閉じる">×</button>
+      </div>
+
+      <section class="settings-section" aria-labelledby="syncTitle">
+        <div class="section-title-row">
+          <div>
+            <h3 id="syncTitle">複数受付端末を同期</h3>
+            <p class="hint compact">同じWi-Fiでなくても大丈夫です。各PCがインターネットにつながれば、受付A・B・Cの来校済み状態を共有します。</p>
+          </div>
+          <span id="settingsSyncState" class="sync-badge off">同期OFF</span>
+        </div>
+        <label>この受付端末の名前
+          <input id="deviceLabelInput" value="受付A" maxlength="32" placeholder="例：受付A / 体育館 / 正門">
+        </label>
+        <label>同期コード
+          <span class="code-row">
+            <input id="syncCodeInput" autocomplete="off" spellcheck="false" maxlength="40" placeholder="3台すべて同じコード">
+            <button id="generateSyncCodeBtn" class="secondary-btn compact-btn" type="button">新しく作る</button>
+          </span>
+        </label>
+        <p class="hint">最初の1台で「新しく作る」を押し、表示されたコードをほかの受付PCにも入力します。同じ名簿＋同じ同期コードの端末だけが同じ受付として共有されます。</p>
+        <div class="sync-action-row">
+          <button id="enableSyncBtn" class="primary-btn" type="button">同期を開始</button>
+          <button id="disableSyncBtn" class="secondary-btn hidden" type="button">同期を止める</button>
+        </div>
+        <p id="syncDetail" class="hint">現在はこの端末だけで受付します。</p>
+        <button id="clearCloudSyncBtn" class="danger-link hidden" type="button">この同期コードのクラウド受付記録を削除</button>
+        <p class="privacy-note">同期サーバーへ保存するのは、名簿から作った匿名ID・受付/取消・時刻・端末名です。名簿の氏名・フリガナ・学校名は送信しません。</p>
+      </section>
+
+      <hr>
+      <section class="settings-section" aria-labelledby="rosterTitle">
+        <h3 id="rosterTitle">名簿の列設定</h3>
+        <div id="settingsNoData" class="hint">Excelを読み込むと設定できます。</div>
+        <div id="settingsContent" class="hidden">
+          <label>使用するシート
+            <select id="sheetSelect"></select>
+          </label>
+          <div class="mapping-grid">
+            <label>受付ID列<select id="idCol"></select></label>
+            <label>当落列<select id="statusCol"></select></label>
+            <label>氏名列<select id="nameCol"></select></label>
+            <label>フリガナ列<select id="kanaCol"></select></label>
+            <label>学校名列<select id="schoolCol"></select></label>
+            <label>学年列<select id="gradeCol"></select></label>
+            <label>参加人数列<select id="partyCol"></select></label>
+            <label>補助情報列<select id="extraCol"></select></label>
+          </div>
+          <label>データ開始行
+            <input id="startRow" type="number" min="1" value="1" inputmode="numeric">
+          </label>
+          <label>当選とみなす値
+            <input id="winnerValue" value="t" placeholder="例：t / 当選 / 1">
+          </label>
+          <div class="setting-summary" id="mappingSummary"></div>
+          <button id="applyMappingBtn" class="primary-btn" type="button">この設定で受付を開始</button>
+        </div>
+      </section>
+
+      <hr>
+      <section class="settings-section" aria-labelledby="dataTitle">
+        <h3 id="dataTitle">受付データ</h3>
+        <div class="stack-actions">
+          <button id="exportCsvBtn" class="secondary-btn" type="button">来校記録CSVを書き出す</button>
+          <button id="exportExternalBtn" class="secondary-btn" type="button">名簿外CSVを書き出す</button>
+          <button id="exportBackupBtn" class="secondary-btn" type="button">バックアップJSON</button>
+          <label class="secondary-btn file-btn">バックアップを復元<input id="restoreInput" type="file" accept="application/json,.json" hidden></label>
+        </div>
+        <button id="resetAttendanceBtn" class="danger-link" type="button">この名簿の受付記録だけをリセット</button>
+        <button id="forgetSessionBtn" class="danger-link danger-strong" type="button">この端末から名簿＋受付データを完全削除</button>
+        <p class="privacy-note">読み込んだ名簿・名簿外の氏名情報は、再開できるようこの端末のブラウザ保存領域に保存します。共有PCでは受付終了後に「完全削除」を実行してください。</p>
+      </section>
+
+      <p class="manual-link"><a href="manual.html">？ 詳しい使い方を開く</a></p>
+    </div>
+  </dialog>
+
+    <script src="app-part-01.js"></script>
+  <script src="app-part-02.js"></script>
+  <script src="app-part-03.js"></script>
+  <script src="app-part-04.js"></script>
+  <script src="app-part-05.js"></script>
+  <script src="app-part-06.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
