@@ -1,0 +1,17 @@
+w=0,l=0;for(const p of state.people){if(state.attendance[p.key])p.winner?w++:l++;}
+    const localEx=localExternalChecked();
+    const pendingExternal=state.sync.enabled?state.sync.queue.filter(q=>normalizeSyncCode(q.syncCode)===effectiveSyncCode()&&q.personKind==='external'&&q.action==='check').length:0;
+    const ex=state.sync.enabled?Math.max(localEx,state.sync.remoteExternalCount+pendingExternal):localEx;
+    els.checkedCount.textContent=(w+l+ex).toLocaleString();els.winnerChecked.textContent=w.toLocaleString();els.loserChecked.textContent=l.toLocaleString();els.externalChecked.textContent=ex.toLocaleString();
+  }
+  function candidateHtml(p){
+    const checked=state.attendance[p.key],meta=state.attendanceMeta[p.key]||{},tag=p.winner?'<span class="chip winner">当選</span>':'<span class="chip loser">落選</span>';
+    const syncChip=checked&&meta.deviceLabel?`<span class="chip remote">${escapeHtml(meta.deviceLabel)}</span>`:'';
+    const pending=checked&&meta.pending?'<span class="chip pending">未同期</span>':'';
+    return `<article class="result-card ${checked?'checked':''}"><div><div class="chips">${tag}${checked?`<span class="chip checked">受付済 ${timeJa(checked)}</span>`:''}${syncChip}${pending}</div><p class="person-name">${escapeHtml(p.name||p.kana||'氏名未登録')}</p><p class="kana">${escapeHtml(p.kana)}</p><div class="details"><span><b>ID</b> ${escapeHtml(p.id)}</span>${p.grade?`<span><b>学年</b> ${escapeHtml(p.grade)}</span>`:''}${p.school?`<span><b>学校</b> ${escapeHtml(p.school)}</span>`:''}${p.party?`<span><b>人数</b> ${escapeHtml(p.party)}</span>`:''}${p.extra?`<span><b>補助</b> ${escapeHtml(p.extra)}</span>`:''}</div></div><div>${checked?`<button class="undo-btn" data-action="undo" data-key="${escapeHtml(p.key)}">受付を取り消す</button>`:`<button class="check-btn" data-action="check" data-key="${escapeHtml(p.key)}">この方で受付</button>`}</div></article>`;
+  }
+  function externalHtml(x){return `<article class="result-card checked"><div><div class="chips"><span class="chip external">名簿外</span><span class="chip checked">受付済 ${timeJa(x.checkedAt)}</span>${x.deviceLabel?`<span class="chip remote">${escapeHtml(x.deviceLabel)}</span>`:''}</div><p class="person-name">${escapeHtml(x.name||x.kana)}</p><p class="kana">${escapeHtml(x.kana)}</p><div class="details">${x.school?`<span><b>学校</b> ${escapeHtml(x.school)}</span>`:''}${x.memo?`<span><b>メモ</b> ${escapeHtml(x.memo)}</span>`:''}</div></div><div><button class="undo-btn" data-action="undo-external" data-key="${escapeHtml(x.key)}">登録を取り消す</button></div></article>`;}
+  function renderResults(){
+    if(!els.searchInput)return;
+    const q=normalizeSearch(els.searchInput.value||'');state.currentQuery=q;els.clearSearchBtn.classList.toggle('hidden',!q);
+    if(!q){els.results.innerHTM
