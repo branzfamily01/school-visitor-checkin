@@ -28,7 +28,7 @@ jobs:
           new Function(source);
           const index = fs.readFileSync('index.html','utf8');
           const ids = new Set([...index.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));
-          const referenced = new Set([...source.matchAll(/els\.([A-Za-z0-9_]+)/g)].map(m=>m[1]));
+          const referenced = new Set([...source.matchAll(/\bels\.([A-Za-z0-9_]+)/g)].map(m=>m[1]));
           const missing = [...referenced].filter(id=>!ids.has(id));
           if (missing.length) throw new Error('missing DOM ids: '+missing.join(','));
           const manual = fs.readFileSync('manual.html','utf8');
