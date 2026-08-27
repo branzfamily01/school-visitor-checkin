@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14532d">
+  <title>来校チェック｜使い方</title>
+  <style>
+    :root{--bg:#f4f7f5;--card:#fff;--text:#17231c;--muted:#637168;--line:#d7e1da;--green:#14532d;--greenSoft:#eaf5ed;--amber:#8a5d00;--amberSoft:#fff5d8;--orange:#9a3412;--orangeSoft:#fff0e5;--blue:#1d4ed8;--blueSoft:#edf3ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;color:var(--text);background:var(--bg)}
+    *{box-sizing:border-box;scroll-margin-top:14px}body{margin:0;background:var(--bg);line-height:1.7}.wrap{max-width:820px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 14px max(80px,env(safe-area-inset-bottom))}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);margin:0}.top h1{font-size:26px;margin:0}.back{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--green);text-decoration:none;font-weight:800;white-space:nowrap}.hero,.card,.toc{background:var(--card);border:1px solid var(--line);border-radius:20px}.hero{padding:20px;margin-bottom:14px}.hero h2{font-size:22px;margin:0 0 6px}.hero p{margin:0;color:#3f4c44}.first{border:2px solid #90b99d;background:#fbfefc}.badge{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--greenSoft);color:var(--green);font-size:12px;font-weight:900}.steps{counter-reset:step;display:grid;gap:10px;margin-top:14px}.step{position:relative;padding:13px 14px 13px 54px;background:#fff;border:1px solid var(--line);border-radius:15px;min-height:54px}.step:before{counter-increment:step;content:counter(step);position:absolute;left:14px;top:13px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:var(--green);color:white;font-weight:900}.step b{display:block}.toc{padding:14px;margin-bottom:14px}.toc strong{display:block;margin-bottom:8px}.toc nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.toc a{min-height:42px;display:flex;align-items:center;padding:8px 10px;background:#f7faf8;border-radius:11px;color:var(--green);text-decoration:none;font-weight:700;font-size:14px}.card{padding:18px;margin:12px 0}.card h2{font-size:21px;margin:0 0 8px}.card h3{font-size:17px;margin:18px 0 6px}.card p{margin:7px 0}.note,.warn,.info{padding:12px 14px;border-radius:14px;margin:12px 0}.note{background:var(--greenSoft)}.warn{background:var(--orangeSoft);color:#73300c}.info{background:var(--blueSoft);color:#263f73}.mini-ui{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfb;margin:12px 0}.search-demo{border:2px solid #9eb5a6;border-radius:14px;padding:12px;background:white;font-size:19px;font-weight:700}.candidate{margin-top:9px;border:1px solid var(--line);border-radius:14px;padding:12px;background:white}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:12px;font-weight:800;padding:4px 8px;border-radius:999px}.win{background:var(--greenSoft);color:var(--green)}.lose{background:var(--amberSoft);color:var(--amber)}.checked{background:#e9efeb;color:var(--green)}.external{background:var(--blueSoft);color:var(--blue)}.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:7px;align-items:center;text-align:center;margin:12px 0}.node{border:1px solid var(--line);border-radius:13px;padding:12px 8px;background:#fff;font-weight:800}.arrow{color:var(--muted);font-weight:900}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;margin:10px 0}table{width:100%;border-collapse:collapse;min-width:560px;background:#fff}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f3f7f4;font-size:13px}td{font-size:14px}.qa{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.qa b{display:block;margin-bottom:4px}.term{display:grid;grid-template-columns:130px 1fr;gap:8px;border-top:1px solid var(--line);padding:9px 0}.toplink{display:block;text-align:center;margin:18px 0;color:var(--green);font-weight:800}.footer{color:var(--muted);font-size:12px;text-align:center;margin-top:24px}.button-name{font-weight:900;color:var(--green)}code{background:#edf1ee;border-radius:6px;padding:2px 5px;font-size:.9em}@media(max-width:600px){.top h1{font-size:22px}.top{align-items:flex-start}.toc nav{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.term{grid-template-columns:1fr}.card,.hero{padding:16px}.back{font-size:13px}}
+  </style>
+</head>
+<body id="top">
+  <div class="wrap">
+    <header class="top">
+      <div><p class="eyebrow">VISITOR CHECK-IN MANUAL</p><h1>来校チェック｜使い方</h1></div>
+      <a class="back" href="index.html">← アプリへ戻る</a>
+    </header>
+
+    <section class="hero">
+      <h2>このアプリは何をするもの？</h2>
+      <p>受付で来校者の名前を入力し、Excel名簿の<strong>本人情報・当選/落選・受付済みか</strong>をすぐ確認するアプリです。抽選結果にかかわらず、来た方は本人確認後に受付します。</p>
+    </section>
+
+    <section id="first" class="hero first">
+      <span class="badge">まずこれだけ</span>
+      <h2>受付担当者の基本3ステップ</h2>
+      <div class="steps">
+        <div class="step"><b>名前をカタカナで数文字入力</b>候補がすぐ出ます。漢字や受付IDでも検索できます。</div>
+        <div class="step"><b>本人情報と「当選 / 落選」を確認</b>同姓同名なら、受付ID・学校名・学年なども見ます。</div>
+        <div class="step"><b><span class="button-name">「この方で受付」</span>を押す</b>「受付済」と時刻が残ります。次の方の検索へ進みます。</div>
+      </div>
+      <div class="note"><strong>名簿にいない方も入場できます。</strong><br>検索で見つからなければ <span class="button-name">「＋ 名簿外として受付」</span> を押します。</div>
+    </section>
+
+    <section class="toc">
+      <strong>ページ内目次</strong>
+      <nav>
+        <a href="#start-day">受付を始める</a><a href="#screen">画面の見方</a>
+        <a href="#checkin">受付する</a><a href="#multi">3台で使う</a>
+        <a href="#offline">通信が切れたら</a><a href="#external">名簿外の方</a>
+        <a href="#data">データと保存</a><a href="#mistake">間違えたとき</a>
+        <a href="#generic">別のExcelで使う</a><a href="#trouble">困ったとき</a>
+        <a href="#iphone">スマホで使う</a><a href="#terms">用語集</a>
+      </nav>
+    </section>
+
+    <section id="start-day" class="card">
+      <h2>受付を始める</h2>
+      <h3>初回</h3>
+      <div class="steps">
+        <div class="step"><b><span class="button-name">「Excel / CSV を選ぶ」</span>を押す</b>受付で使う名簿ファイルを選びます。</div>
+        <div class="step"><b>自動認識を確認</b>今回の8/22名簿は「7kai」シートを自動認識し、B列の <code>t / ｔ</code> 280件を当選として扱います。</div>
+        <div class="step"><b>受付を開始</b>検索欄が出れば準備完了です。</div>
+      </div>
+      <h3>一度閉じた後</h3>
+      <p>同じPC・同じブラウザなら、起動時に<strong>「前回の受付があります」</strong>が出ます。<span class="button-name">「前回の受付を続ける」</span>を押せば、Excelを選び直さず続きから再開できます。</p>
+      <div class="warn">シークレットモードやブラウザのサイトデータ削除を使うと、端末内の保存データが消えることがあります。受付当日は通常モードを使ってください。</div>
+    </section>
+
+    <section id="screen" class="card">
+      <h2>画面の見方</h2>
+      <div class="mini-ui">
+        <div class="chips"><span class="chip win">当選</span><span class="chip checked">受付済 10:31</span><span class="chip external">受付A</span></div>
+        <div class="search-demo">⌕ ワタナベ</div>
+        <div class="candidate"><strong>サトウ ミサキ</strong><br><small>サトウ ミサキ</small><br>受付ID / 学年 / 学校 / 人数 / 補助情報</div>
+      </div>
+      <p><strong>来校済</strong>：受付した合計です。<strong>当選 / 落選</strong>：そのうちの抽選結果別人数です。<strong>名簿外</strong>：元名簿にいなかった方です。</p>
+      <p><strong>同期表示</strong>：複数PCで使うときの状態です。緑なら共有中、オレンジなら通信できていません。</p>
+      <p><strong>「✓ この端末に保存済み」</strong>：受付記録がこのPC内に保存されたことを示します。</p>
+    </section>
+
+    <section id="checkin" class="card">
+      <h2>来校者を受付する</h2>
+      <div class="flow"><div class="node">名前を入力</div><div class="arrow">→</div><div class="node">本人を確認</div><div class="arrow">→</div><div class="node">この方で受付</div></div>
+      <p>カタカナは途中まででも検索できます。空白、全角/半角、ひらがな/カタカナの違いはできるだけ吸収します。</p>
+      <p>検索候補には<strong>氏名・フリガナ・受付ID・当選/落選・学校名・学年・人数・補助情報</strong>が表示されます。本人が特定できたら <span class="button-name">「この方で受付」</span> を押します。</p>
+      <div class="note">当選者も落選者も受付操作は同じです。このアプリの目的は「入場を許可するか」ではなく、<strong>目の前の方が誰かを確認して来校記録を残すこと</strong>です。</div>
+      <h3>すでに受付済みの場合</h3>
+      <p>候補に<strong>「受付済 10:31」</strong>と出て、通常の受付ボタンは出ません。複数端末同期中なら「受付A」など、どの端末で受付したかも表示されます。</p>
+    </section>
+
+    <section id="multi" class="card">
+      <h2>パソコン3台などで同時に使う</h2>
+      <p>3台が<strong>同じWi-Fiにつながっている必要はありません</strong>。PCごとに学校Wi-Fi、スマホのテザリングなど別のネット回線でも、インターネットへ接続できれば共有できます。</p>
+      <div class="flow"><div class="node">受付A<br>学校Wi-Fi</div><div class="arrow">↗</div><div class="node">匿名の受付状態を共有</div><div class="arrow">↖</div><div class="node">受付B/C<br>別Wi-Fi・テザリング</div></div>
+      <h3>最初の1台</h3>
+      <div class="steps">
+        <div class="step"><b>⚙ 設定 →「複数受付端末を同期」</b>端末名を「受付A」などにします。</div>
+        <div class="step"><b><span class="button-name">「新しく作る」</span>を押す</b>同期コードが表示されます。</div>
+        <div class="step"><b><span class="button-name">「同期を開始」</span>を押す</b>緑の「● 同期中」になれば接続完了です。</div>
+      </div>
+      <h3>2台目・3台目</h3>
+      <p>同じ名簿を読み込み、端末名を「受付B」「受付C」に変え、<strong>1台目と同じ同期コード</strong>を入力して <span class="button-name">「同期を開始」</span> を押します。</p>
+      <div class="warn"><strong>同期コードは当日の受付チームだけで共有してください。</strong> 同じ名簿と同じコードを使った端末が、同じ受付グループになります。</div>
+    </section>
+
+    <section id="offline" class="card">
+      <h2>通信が切れたら</h2>
+      <p>画面に<strong>「⚠ 他の受付端末とは現在同期されていません」</strong>と出ます。</p>
+      <div class="steps">
+        <div class="step"><b>受付は止めない</b>このPCにはそのまま記録されます。</div>
+        <div class="step"><b>「未同期 ○件」を確認</b>他のPCにはまだ届いていない件数です。</div>
+        <div class="step"><b>通信が戻れば自動同期</b>必要なら <span class="button-name">「今すぐ同期」</span> を押します。</div>
+      </div>
+      <div class="warn">通信断中だけは、別PCで同じ方を受付してもその場では分かりません。完全に圏外の場合は、一時的に「あ〜さ行」「た〜は行」「ま〜わ行」のように受付列を分けると二重受付を減らせます。</div>
+    </section>
+
+    <section id="external" class="card">
+      <h2>名簿にない方が来たとき</h2>
+      <p>検索しても候補が出なければ、<span class="button-name">「＋ 名簿外として受付」</span>を押します。</p>
+      <p><strong>フリガナだけ必須</strong>です。氏名・学校名・メモは必要に応じて入力します。</p>
+      <div class="info">複数端末同期中、名簿外の<strong>氏名そのものはクラウド共有しません</strong>。匿名IDだけ共有します。そのため、ほかのPCでは名簿外人数は共有できますが、そのPCで入力していない名簿外の氏名一覧までは表示されません。名簿外の氏名をまとめて残す必要がある場合は、各受付PCから「名簿外CSVを書き出す」を保存してください。</div>
+    </section>
+
+    <section id="data" class="card">
+      <h2>データについて</h2>
+      <div class="table-wrap"><table><thead><tr><th>データ</th><th>どこに保存？</th><th>端末間共有？</th></tr></thead><tbody>
+        <tr><td>氏名・フリガナ・学校名などのExcel名簿</td><td>このPCのブラウザ内</td><td>しない</td></tr>
+        <tr><td>受付済み・時刻</td><td>このPC内に自動保存</td><td>同期ONなら匿名IDで共有</td></tr>
+        <tr><td>名簿外の氏名・学校名・メモ</td><td>入力したPC内</td><td>氏名等は共有しない</td></tr>
+        <tr><td>同期サーバー</td><td>匿名ID・受付/取消・時刻・端末名</td><td>同じ同期コードの受付間で共有</td></tr>
+      </tbody></table></div>
+      <p>端末内保存には、ブラウザの<strong>IndexedDB / localStorage</strong>という仕組みを使います。簡単に言うと「このPCのこのブラウザの中に保存する」方式です。</p>
+      <h3>バックアップ</h3>
+      <p>⚙ 設定の <span class="button-name">「バックアップJSON」</span> を押すと、この端末の受付状態をファイルとして保存できます。念のため休憩時・受付終了時にも保存しておくと安全です。</p>
+      <h3>受付終了後</h3>
+      <p>共有PCの場合は、CSVやバックアップを必要な場所へ保存した後、<span class="button-name">「この端末から名簿＋受付データを完全削除」</span>で個人情報を消してください。</p>
+    </section>
+
+    <section id="mistake" class="card">
+      <h2>間違えたとき</h2>
+      <h3>違う人を受付してしまった</h3>
+      <p>その人をもう一度検索し、<span class="button-name">「受付を取り消す」</span>を押します。同期中なら取消もほかの端末へ共有されます。</p>
+      <h3>名簿外を間違えて登録した</h3>
+      <p>同じ名前を検索し、<span class="button-name">「登録を取り消す」</span>を押します。</p>
+      <h3>受付を全部やり直したい</h3>
+      <p>⚙ 設定の <span class="button-name">「この名簿の受付記録だけをリセット」</span>を使います。元に戻せないため、必要なら先にバックアップしてください。</p>
+    </section>
+
+    <section id="generic" class="card">
+      <h2>別のExcel・別イベントで使う</h2>
+      <p>8/22ファイル以外でも使えます。自動認識されない場合は⚙設定で、次の列を指定します。</p>
+      <div class="table-wrap"><table><thead><tr><th>設定</th><th>例</th></tr></thead><tbody>
+        <tr><td>受付ID列</td><td>A列</td></tr><tr><td>当落列</td><td>B列</td></tr><tr><td>氏名列</td><td>D列</td></tr><tr><td>フリガナ列</td><td>E列</td></tr><tr><td>学校名・学年・人数・補助情報</td><td>必要な列を選択</td></tr><tr><td>データ開始行</td><td>1行目からなら「1」</td></tr><tr><td>当選とみなす値</td><td><code>t</code>、<code>当選</code>、<code>1</code> など</td></tr>
+      </tbody></table></div>
+      <p>列を決めたら <span class="button-name">「この設定で受付を開始」</span>を押します。</p>
+    </section>
+
+    <section id="trouble" class="card">
+      <h2>困ったとき</h2>
+      <div class="qa"><b>症状：Excelを読み込めない</b>原因：古いブラウザ、壊れたExcel、未対応形式など。<br>対処：最新のChrome / Edge / Safariで開き、<code>.xlsx</code> またはCSVを使ってください。</div>
+      <div class="qa"><b>症状：名前が見つからない</b>原因：名簿の表記違い、フリガナ誤り、名簿外など。<br>対処：苗字だけ・受付ID・漢字でも検索し、それでもなければ名簿外受付を使います。</div>
+      <div class="qa"><b>症状：別PCの受付が反映されない</b>原因：同期OFF、同期コード違い、別名簿、通信断。<br>対処：「同期設定」で端末名とコードを確認し、緑の「● 同期中」になるか見ます。</div>
+      <div class="qa"><b>症状：「● オフライン」になった</b>原因：インターネットへ出られません。<br>対処：受付は続けて大丈夫です。Wi-Fiやテザリングを直すと自動同期します。</div>
+      <div class="qa"><b>症状：画面を閉じてしまった</b>原因：誤操作でも問題ありません。<br>対処：同じブラウザで開き直し、<span class="button-name">「前回の受付を続ける」</span>を押します。</div>
+    </section>
+
+    <section id="iphone" class="card">
+      <h2>スマホ・iPhoneで使う方法</h2>
+      <p>GitHub Pagesの公開URLをSafariで開けます。iPhoneなら共有ボタン → <strong>「ホーム画面に追加」</strong>でアプリのように起動できます。</p>
+      <p>一度オンラインでアプリとこのマニュアルを開いておけば、PWAのキャッシュにより通信が不安定でも基本画面とマニュアルを開けます。Excel名簿は端末内に保存されたものを再開できます。</p>
+      <div class="warn">複数端末のリアルタイム共有だけはインターネット通信が必要です。オフラインでも受付記録そのものはこの端末に残ります。</div>
+    </section>
+
+    <section id="terms" class="card">
+      <h2>用語集</h2>
+      <div class="term"><strong>同期</strong><span>受付Aで付けた「受付済み」を受付B/Cにも反映すること。</span></div>
+      <div class="term"><strong>同期コード</strong><span>同じ受付イベントの端末をひとまとまりにする合言葉。全受付PCで同じものを使います。</span></div>
+      <div class="term"><strong>未同期</strong><span>このPCには保存済みだが、まだほかのPCへ共有できていない受付記録。</span></div>
+      <div class="term"><strong>匿名ID</strong><span>氏名をそのまま送らず、名簿と同期コードから作る識別用の文字列。</span></div>
+      <div class="term"><strong>IndexedDB / localStorage</strong><span>Webブラウザが、この端末の中にデータを保存する仕組み。</span></div>
+      <div class="term"><strong>PWA</strong><span>Webページをホーム画面からアプリのように使い、必要なファイルをオフライン用に保存できる仕組み。</span></div>
+    </section>
+
+    <a class="toplink" href="#top">↑ ページの先頭へ</a>
+    <a class="back" style="width:100%" href="index.html">← 来校チェックへ戻る</a>
+    <p class="footer">来校チェック manual.html</p>
+  </div>
+  <script>if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});</script>
+</body>
+</html>
