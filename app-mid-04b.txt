@@ -1,0 +1,36 @@
+de)} ／ ${pending?`未同期 ${pending}件`:(status==='online'?'全件共有済み':'受付は端末内に保存中')}${state.sync.statusDetail?` ／ ${state.sync.statusDetail}`:''}`:'現在はこの端末だけで受付します。';
+  }
+  async function enableSync(fromSaved=false){
+    if(!state.people.length){alert('先に名簿を読み込んでください。');return;}
+    const saved=fromSaved?state.sync.savedSettings:null;
+    const code=normalizeSyncCode(saved?.code ?? els.syncCodeInput.value), device=(saved?.deviceLabel ?? els.deviceLabelInput.value).trim()||'受付A';
+    if(code.length<8){alert('同期コードは8文字以上にしてください。');els.syncCodeInput.focus();return;}
+    if(effectiveSyncCode()&&effectiveSyncCode()!==code){state.sync.queue=[];state.sync.bootstrapped=false;state.sync.remoteLatest={};state.sync.remoteExternalCount=0;}
+    state.sync.code=code; state.sync.deviceLabel=device; state.sync.enabled=true; state.sync.bootstrapped=fromSaved?!!saved?.bootstrapped:state.sync.bootstrapped;
+    els.syncCodeInput.value=displaySyncCode(code); els.deviceLabelInput.value=device; setSyncStatus('syncing');
+    try{await prepareSyncTokens();bootstrapExistingForSync();startSyncLoop();save();updateSyncUi();}
+    catch(err){setSyncStatus('offline',err?.message||'同期準備に失敗');startSyncLoop();save();}
+  }
+  function disableSync(){
+    if(!confirm('複数端末との同期を止めますか？ 受付はこの端末だけで続けられます。'))return;
+    stopSyncLoop(); state.sync.enabled=false; state.sync.eventToken=''; state.sync.status='off'; save(); updateSyncUi();
+  }
+  async function clearCloudSync(){
+    if(!state.sync.enabled||!state.sync.eventToken)return;
+    if(state.sync.queue.some(q=>normalizeSyncCode(q.syncCode)===effectiveSyncCode())){alert('未同期の受付があります。通信が戻って「未同期 0件」になってから削除してください。');return;}
+    if(!confirm('この同期コードに保存された匿名のクラウド受付記録を削除します。ほかの受付端末もオフラインであることを確認してください。元に戻せません。'))return;
+    try{setSyncStatus('syncing');await syncApi({action:'clear',eventToken:state.sync.eventToken});state.sync.remoteLatest={};state.sync.remoteExternalCount=0;state.sync.bootstrapped=false;bootstrapExistingForSync();await syncOnce();alert('クラウド受付記録を作り直しました。');}
+    catch(err){setSyncStatus('offline',err?.message||'削除に失敗');alert('クラウド受付記録を削除できませんでした。');}
+  }
+  async function remoteExternalAlreadyChecked(x){
+    if(!state.sync.enabled||!state.sync.eventToken)return null;
+    const token=await sha256Token(`person|v1|${effectiveSyncCode()}|${state.datasetFingerprint}|${canonicalExternalIdentity(x)}`), e=state.sync.remoteLatest[token];
+    return e?.action==='check'?e:null;
+  }
+  async function restoreSyncIfNeeded(){
+    const saved=state.sync.savedSettings;if(!saved)return;
+    els.deviceLabelInput.value=saved.deviceLabel||'受付A';els.syncCodeInput.value=saved.code?displaySyncCode(saved.code):'';
+    if(saved.enabled)await enableSync(true);else updateSyncUi();
+  }
+  function renderStats(){
+    let 
