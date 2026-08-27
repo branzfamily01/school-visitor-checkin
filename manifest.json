@@ -1,0 +1,18 @@
+{
+  "name": "来校チェック",
+  "short_name": "来校チェック",
+  "description": "Excel名簿から本人・当落・来校済みを素早く照合する複数受付端末対応アプリ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#14532d",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
