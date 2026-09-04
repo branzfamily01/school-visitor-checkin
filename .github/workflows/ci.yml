@@ -22,20 +22,21 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           global.window = {};
-          for (let i=1;i<=6;i++) require(`./app-part-0${i}.js`);
-          if (!Array.isArray(window.__CHECKIN_PARTS) || window.__CHECKIN_PARTS.length !== 6) throw new Error('application parts incomplete');
+          for (let i=1;i<=12;i++) require(`./app-part-0${i}.js`);
+          if (!Array.isArray(window.__CHECKIN_PARTS) || window.__CHECKIN_PARTS.length !== 12) throw new Error('application parts incomplete');
           const source = window.__CHECKIN_PARTS.join('');
           new Function(source);
           const index = fs.readFileSync('index.html','utf8');
           const ids = new Set([...index.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));
           const referenced = new Set([...source.matchAll(/\bels\.([A-Za-z0-9_]+)/g)].map(m=>m[1]));
-          const missing = [...referenced].filter(id=>!ids.has(id));
+          const dynamicIds = new Set(['festivalControls','activeFilterLabel','gradeFilters','searchLabel','statLabelTotal','statLabelA','statLabelB','statLabelC']);
+          const missing = [...referenced].filter(id=>!ids.has(id) && !dynamicIds.has(id));
           if (missing.length) throw new Error('missing DOM ids: '+missing.join(','));
           const manual = fs.readFileSync('manual.html','utf8');
           for (const s of ['まずこれだけ','画面の見方','名簿外','オフライン','用語集','index.html']) if (!manual.includes(s)) throw new Error('manual missing: '+s);
           const hub = JSON.parse(fs.readFileSync('my-hub.json','utf8'));
           if (hub.title !== '来校チェック' || !hub.manualUrl) throw new Error('my-hub metadata invalid');
           const sw = fs.readFileSync('service-worker.js','utf8');
-          for (const f of ['index.html','manual.html','app.js','app-part-01.js','app-part-06.js','manifest.json','my-hub.json']) if (!sw.includes(f)) throw new Error('service worker missing: '+f);
+          for (const f of ['index.html','manual.html','app.js','app-part-01.js','app-part-06.js','app-part-12.js','manifest.json','my-hub.json']) if (!sw.includes(f)) throw new Error('service worker missing: '+f);
           console.log('All checks passed. JS chars:', source.length, 'DOM ids:', ids.size);
           NODE

@@ -1,7 +1,7 @@
 {
   "name": "来校チェック",
   "short_name": "来校チェック",
-  "description": "Excel名簿から本人・当落・来校済みを素早く照合する複数受付端末対応アプリ",
+  "description": "目高祭の在校生保護者・中学生保護者・一般を分類別に検索し、複数受付端末で来校記録を共有できる受付アプリ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
