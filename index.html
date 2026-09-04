@@ -87,7 +87,7 @@
           <label for="searchInput" class="search-label">来校者のお名前を入力</label>
           <div class="search-box-wrap">
             <span class="search-icon" aria-hidden="true">⌕</span>
-            <input id="searchInput" class="search-input" type="search" inputmode="kana" autocomplete="off" placeholder="カタカナ・漢字・受付ID" aria-describedby="searchHelp">
+            <input id="searchInput" class="search-input" type="search" inputmode="kana" autocomplete="off" placeholder="名字（カナ/漢字）または受付番号下5桁" aria-describedby="searchHelp">
             <button id="clearSearchBtn" class="clear-btn hidden" type="button" aria-label="検索を消去">×</button>
           </div>
           <p id="searchHelp" class="hint compact">空白・全角半角を気にせず検索できます。ひらがな入力もカタカナとして照合します。</p>
@@ -113,7 +113,7 @@
     <form method="dialog" class="dialog-card" id="manualForm">
       <div class="dialog-head">
         <div><p class="eyebrow">名簿外</p><h2>来校者を追加</h2></div>
-        <button value="cancel" class="icon-btn" aria-label="閉じる">×</button>
+        <button value="cancel" type="button" class="icon-btn" aria-label="閉じる">×</button>
       </div>
       <label>フリガナ <span class="required">必須</span>
         <input id="manualKana" required autocomplete="off" placeholder="例：タナカ ハルカ">
@@ -129,7 +129,7 @@
       </label>
       <p class="privacy-note">複数端末同期中も、この氏名・フリガナ・学校名そのものは同期サーバーへ送りません。同じ名義を別端末で入力した場合は、匿名IDで重複を確認します。</p>
       <div class="dialog-actions">
-        <button value="cancel" class="ghost-btn">キャンセル</button>
+        <button value="cancel" type="button" class="ghost-btn">キャンセル</button>
         <button id="manualSubmit" value="default" class="primary-btn" type="submit">この方を受付</button>
       </div>
     </form>
