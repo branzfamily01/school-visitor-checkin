@@ -1,0 +1,34 @@
+name: Apply production release
+
+on:
+  push:
+    branches: [release/mekousai-production-20260904]
+    paths:
+      - '.release/prod_public_files.tgz.b64'
+      - '.github/workflows/apply-production-release.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: release/mekousai-production-20260904
+          fetch-depth: 0
+      - name: Apply tested production files
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .release/prod_public_files.tgz.b64 > /tmp/prod.tgz
+          tar -xzf /tmp/prod.tgz
+          rm -f .release/prod_public_files.tgz.b64 .github/workflows/apply-production-release.yml
+          rmdir .release 2>/dev/null || true
+          node -e "global.window={};for(let i=1;i<=12;i++)require('./app-part-'+String(i).padStart(2,'0')+'.js');new Function(window.__CHECKIN_PARTS.join(''));console.log('JS OK')"
+          git config user.name 'branzfamily01'
+          git config user.email 'branz.family.01@gmail.com'
+          git add -A
+          git commit -m '目高祭本番版: 端末名・実人数・監査修正'
+          git push origin HEAD:release/mekousai-production-20260904
