@@ -1,4 +1,4 @@
-const CACHE = 'school-visitor-checkin-v5';
+const CACHE = 'school-visitor-checkin-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,12 @@ const ASSETS = [
   './app-part-04.js',
   './app-part-05.js',
   './app-part-06.js',
+  './app-part-12.js',
+  './app-part-11.js',
+  './app-part-10.js',
+  './app-part-09.js',
+  './app-part-08.js',
+  './app-part-07.js',
   './manifest.json',
   './my-hub.json',
   './icons/icon.svg',
