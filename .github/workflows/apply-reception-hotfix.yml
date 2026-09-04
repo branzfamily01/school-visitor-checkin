@@ -1,0 +1,126 @@
+name: Apply reception hotfix
+
+on:
+  push:
+    branches: [fix/reception-search-cancel-20260904]
+    paths:
+      - '.github/workflows/apply-reception-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: fix/reception-search-cancel-20260904
+      - name: Patch app, manual and cache
+        run: |
+          python <<'PY2'
+          from pathlib import Path
+          import json, math, re
+          parts=[]
+          for i in range(1,13):
+              t=Path(f'app-part-{i:02d}.js').read_text(encoding='utf-8')
+              parts.append(json.loads(t.split('.push(',1)[1].rsplit(');',1)[0]))
+          s=''.join(parts)
+          old="""  function renderResults(){
+    if(!els.searchInput)return;
+    updateFestivalUi();
+    const raw=els.searchInput.value||'', q=normalizeSearch(raw), qDigits=normalizeDigits(raw); state.currentQuery=q; els.clearSearchBtn.classList.toggle('hidden',!q);
+    if(!q){ els.results.innerHTML=''; els.emptyState.classList.remove('hidden'); return; }
+    els.emptyState.classList.add('hidden');
+    const pool=state.mode==='festival'?filteredFestivalPeople():state.people;
+    const suffixExact=[], exact=[], prefix=[], partial=[];
+    for(const p of pool){
+      if(state.mode==='festival'&&qDigits.length===5&&p.idSuffix===qDigits){ suffixExact.push(p); continue; }
+      const nk=normalizeSearch(p.kana), nn=normalizeSearch(p.name), ni=normalizeSearch(p.receptionId||p.id), ns=normalizeSearch(p.surname||'');
+      if(nk===q||nn===q||ni===q||ns===q) exact.push(p);
+      else if(nk.startsWith(q)||ns.startsWith(q)||ni.startsWith(q)) prefix.push(p);
+      else if(p.search.includes(q)) partial.push(p);
+    }
+"""
+          new="""  function renderResults(){
+    if(!els.searchInput)return;
+    updateFestivalUi();
+    const raw=els.searchInput.value||'', q=normalizeSearch(raw), qDigits=normalizeDigits(raw);
+    const compact=normalizeText(raw).replace(/\\s+/g,'').toUpperCase();
+    const digitsOnly=/^\\d+$/.test(compact);
+    const receptionLike=state.mode==='festival' && (/^(?:RQ|ST)\\d{5,}$/.test(compact) || (digitsOnly&&qDigits.length>=5));
+    state.currentQuery=q; els.clearSearchBtn.classList.toggle('hidden',!q);
+    if(!q){ els.results.innerHTML=''; els.emptyState.classList.remove('hidden'); return; }
+    if(state.mode==='festival'&&digitsOnly&&qDigits.length<5){
+      els.emptyState.classList.add('hidden');
+      els.results.innerHTML='<div class="no-match"><strong>受付番号は下5桁を入力してください</strong><p class="hint">例：12345 / １２３４５。名字検索は1文字から使えます。</p></div>';
+      return;
+    }
+    els.emptyState.classList.add('hidden');
+    const pool=state.mode==='festival'?(receptionLike?state.people.filter(p=>p.day===state.festivalDay):filteredFestivalPeople()):state.people;
+    const suffixExact=[], exact=[], prefix=[], partial=[];
+    for(const p of pool){
+      if(state.mode==='festival'&&receptionLike){
+        const receptionDigits=normalizeDigits(p.receptionId||'');
+        if(qDigits.length===5&&p.idSuffix===qDigits){ suffixExact.push(p); continue; }
+        if(qDigits.length>5&&receptionDigits===qDigits){ exact.push(p); continue; }
+      }
+      const nk=normalizeSearch(p.kana), nn=normalizeSearch(p.name), ni=normalizeSearch(p.receptionId||p.id), ns=normalizeSearch(p.surname||'');
+      if(nk===q||nn===q||ni===q||ns===q) exact.push(p);
+      else if(!receptionLike&&(nk.startsWith(q)||ns.startsWith(q)||ni.startsWith(q))) prefix.push(p);
+      else if(!receptionLike&&p.search.includes(q)) partial.push(p);
+    }
+"""
+          if old not in s: raise SystemExit('renderResults target not found')
+          s=s.replace(old,new)
+          s=s.replace("""    if(!found.length&&!ext.length){ els.results.innerHTML=`<div class="no-match"><strong>「${escapeHtml(raw)}」は現在の${state.mode==='festival'?'分類・日付の':''}名簿に見つかりません</strong><p class="hint">${state.mode==='festival'?'上の分類ボタンを切り替えるか、「全分類」で検索してください。':'表記を変えて検索するか、名簿外として受付できます。'}</p><button class="primary-btn" data-action="add-external">＋ 名簿外として受付</button></div>`; return; }
+    els.results.innerHTML=found.map(candidateHtml).join('')+ext.map(externalHtml).join('')+(found.length>=40?'<p class="hint">候補が多いため40件まで表示しています。名字をもう少し入力してください。</p>':'');
+""","""    if(!found.length&&!ext.length){
+      const scopeHint=state.mode==='festival'&&receptionLike ? `${state.festivalDay} の全分類を番号で検索しました。別日の申込なら日付を切り替えてください。` : (state.mode==='festival'?'上の分類ボタンを切り替えるか、「全分類」で検索してください。':'表記を変えて検索するか、名簿外として受付できます。');
+      els.results.innerHTML=`<div class="no-match"><strong>「${escapeHtml(raw)}」は現在の${state.mode==='festival'?(receptionLike?'日付':'分類・日付')+'の':''}名簿に見つかりません</strong><p class="hint">${scopeHint}</p><button class="primary-btn" data-action="add-external">＋ 名簿外として受付</button></div>`; return;
+    }
+    const duplicateNumberNotice=state.mode==='festival'&&receptionLike&&qDigits.length===5&&found.length>1 ? `<div class="no-match"><strong>同じ下5桁が ${found.length}件あります</strong><p class="hint">大分類・氏名・完全な受付番号を確認して、目の前の方と一致する候補だけを受付してください。</p></div>` : '';
+    els.results.innerHTML=duplicateNumberNotice+found.map(candidateHtml).join('')+ext.map(externalHtml).join('')+(found.length>=40?'<p class="hint">候補が多いため40件まで表示しています。名字をもう少し入力してください。</p>':'');
+""")
+          s=s.replace("""      for(const p of state.people){
+""","""      for(const p of state.people.filter(p=>p.day===state.festivalDay)){
+""",1)
+          s=s.replace("""      for(const x of state.externals.filter(v=>v.checkedAt)) rows.push([x.festivalDay||'',x.category||'名簿外','','','','','','',x.kana,x.name,'来校済',new Date(x.checkedAt).toLocaleString('ja-JP'),x.deviceLabel||'']);
+      download(`目高祭-${state.festivalDay.replace('/','-')}-来校記録.csv`,'\\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\\r\\n'),'text/csv;charset=utf-8');
+""","""      for(const x of state.externals.filter(v=>v.checkedAt&&(!v.festivalDay||v.festivalDay===state.festivalDay))) rows.push([x.festivalDay||state.festivalDay,x.category||'名簿外','','','','','','',x.kana,x.name,'来校済',new Date(x.checkedAt).toLocaleString('ja-JP'),x.deviceLabel||'']);
+      download(`目高祭-${state.festivalDay.replace('/','-')}-来校記録_${exportStamp()}.csv`,'\\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\\r\\n'),'text/csv;charset=utf-8');
+""")
+          s=s.replace("  function exportAttendance(){\n", "  function exportStamp(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0'); }\n  function exportAttendance(){\n",1)
+          s=s.replace("""    if(state.mode==='festival'){
+      const dayPeople=state.people.filter(p=>p.day===state.festivalDay);
+""","""    if(state.mode==='festival'){
+      const festivalLocalEx=state.externals.filter(x=>x.checkedAt&&(!x.festivalDay||x.festivalDay===state.festivalDay)).length;
+      const dayPeople=state.people.filter(p=>p.day===state.festivalDay);
+""")
+          s=s.replace("els.checkedCount.textContent=(checked.length+ex).toLocaleString();","els.checkedCount.textContent=(checked.length+festivalLocalEx).toLocaleString();",1)
+          s=s.replace("""    els.manualAddBtn.addEventListener('click',openManual);
+    els.manualForm.addEventListener('submit',async e=>{ if(e.submitter?.value==='cancel')return; e.preventDefault(); els.manualSubmit.disabled=true; try{ if(await addManual())els.manualDialog.close(); }finally{els.manualSubmit.disabled=false;} });
+""","""    els.manualAddBtn.addEventListener('click',openManual);
+    els.manualDialog.querySelectorAll('button[value="cancel"]').forEach(btn=>{ btn.type='button'; btn.addEventListener('click',()=>els.manualDialog.close()); });
+    els.manualForm.addEventListener('submit',async e=>{ e.preventDefault(); els.manualSubmit.disabled=true; try{ if(await addManual())els.manualDialog.close(); }finally{els.manualSubmit.disabled=false;} });
+""")
+          s=s.replace('受付番号は全文または下5桁を全角・半角どちらで入力しても検索できます。','受付番号は全文または下5桁を全角・半角どちらで入力しても検索できます。番号検索は選択中の日付の全分類から探します。')
+          N=12; size=math.ceil(len(s)/N)
+          for i in range(N):
+              chunk=s[i*size:(i+1)*size]
+              Path(f'app-part-{i+1:02d}.js').write_text('window.__CHECKIN_PARTS=window.__CHECKIN_PARTS||[];window.__CHECKIN_PARTS.push('+json.dumps(chunk,ensure_ascii=False)+');\n',encoding='utf-8')
+          idx=Path('index.html').read_text(encoding='utf-8').replace('<button value="cancel" class="icon-btn" aria-label="閉じる">×</button>','<button value="cancel" type="button" class="icon-btn" aria-label="閉じる">×</button>').replace('<button value="cancel" class="ghost-btn">キャンセル</button>','<button value="cancel" type="button" class="ghost-btn">キャンセル</button>')
+          Path('index.html').write_text(idx,encoding='utf-8')
+          m=Path('manual.html'); t=m.read_text(encoding='utf-8')
+          t=t.replace('②中学生・保護者、③一般は、受付番号全文でも<b>下5桁だけ</b>でも検索できます。','②中学生・保護者、③一般は、受付番号全文でも<b>下5桁だけ</b>でも検索できます。番号検索は、現在選んでいる大分類に関係なく、その日の全分類から探します。')
+          t=t.replace('全角数字と半角数字は自動で同じ数字として扱います。</p>','全角数字と半角数字は自動で同じ数字として扱います。</p><div class="danger"><b>下5桁が重なる場合：</b>候補を複数表示します。大分類・氏名・完全な受付番号を確認して、目の前の方と一致する候補を選んでください。</div>')
+          t=t.replace('⚙ → <span class="button-name">「来校記録CSVを書き出す」</span> で記録を保存してください。さらに','⚙ → <span class="button-name">「来校記録CSVを書き出す」</span> で記録を保存してください。目高祭版では、選択中の日付だけを書き出し、ファイル名の末尾に <code>_1430</code> のような時刻が自動で付きます。さらに')
+          m.write_text(t,encoding='utf-8')
+          sw=Path('service-worker.js'); x=sw.read_text(encoding='utf-8'); x=re.sub(r"const CACHE = 'school-visitor-checkin-v\\d+';","const CACHE = 'school-visitor-checkin-v7';",x); sw.write_text(x,encoding='utf-8')
+          Path('.github/workflows/apply-reception-hotfix.yml').unlink(missing_ok=True)
+          PY2
+          git config user.name 'branzfamily01'
+          git config user.email 'branz.family.01@gmail.com'
+          git add app-part-*.js index.html manual.html service-worker.js .github/workflows/apply-reception-hotfix.yml
+          git commit -m 'Fix reception search, cancel and handoff CSV'
+          git push origin HEAD:fix/reception-search-cancel-20260904
