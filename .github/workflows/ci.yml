@@ -22,7 +22,7 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           global.window = {};
-          for (let i=1;i<=12;i++) require(`./app-part-0${i}.js`);
+          for (let i=1;i<=12;i++) require(`./app-part-${String(i).padStart(2,'0')}.js`);
           if (!Array.isArray(window.__CHECKIN_PARTS) || window.__CHECKIN_PARTS.length !== 12) throw new Error('application parts incomplete');
           const source = window.__CHECKIN_PARTS.join('');
           new Function(source);
